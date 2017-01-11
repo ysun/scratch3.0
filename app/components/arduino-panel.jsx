@@ -43,6 +43,7 @@ class ArduinoPanelComponent extends React.Component {
             consoleClear,
             translateCode,
             firmwares,
+            windowHeight,
             ...componentProps
         } = this.props;
         var visible = this.props.visible?'block':'none';
@@ -54,13 +55,14 @@ class ArduinoPanelComponent extends React.Component {
         var firmwareItems  = firmwares.map(f => (
             <MenuItem eventKey={{ 'name':f.name,'path':f.path}} key={f.name}>{f.name}</MenuItem>
         ));
+        var panelHeight = windowHeight-80;
         return (<div
                 style={{
                     position: 'absolute',
                     display: visible,
                     right: 1,
                     width: 500,
-                    height: 806,
+                    height: panelHeight,
                     top: 80,
                     bottom: 8,
                     backgroundColor: '#0097a7'
@@ -80,7 +82,7 @@ class ArduinoPanelComponent extends React.Component {
                 <Button style={{float:'right'}} onClick={openIno}>{<img style={{height: 20}} src={arduinoIcon}/>}{Blockly.Msg.OPENWITHARDUINO}</Button>
             </div>
             <AceEditor
-                style={{top:45,left:2,height:450,width:495}}
+                style={{top:45,left:2,height:panelHeight*0.5,width:495}}
                 mode="c_cpp"
                 theme="eclipse"
                 name="arduino-code"
@@ -93,8 +95,8 @@ class ArduinoPanelComponent extends React.Component {
                     position: 'absolute',
                     left:2,
                     width:495,
-                    height:256,
-                    top:500,
+                    height:panelHeight*0.5-100,
+                    top:panelHeight*0.5+50,
                     overflowY: 'scroll',
                     backgroundColor: '#000000',
                     color: '#008000',
@@ -107,7 +109,7 @@ class ArduinoPanelComponent extends React.Component {
                   onSubmit={this.consoleEnter}
                  style={{
                      position:'absolute',
-                     top:754,
+                     bottom:5,
                      width:500,
                      marginLeft:4,
                      marginTop:8

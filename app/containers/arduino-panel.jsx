@@ -24,6 +24,7 @@ class ArduinoPanel extends React.Component {
                 codeRef={this.props.codeUpdate}
                 uploadProj={this.props.uploadProj}
                 firmwares={this.props.firmwares}
+                windowHeight={this.props.windowHeight}
                 {...props}
             />
         );

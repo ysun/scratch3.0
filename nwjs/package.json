@@ -12,8 +12,8 @@
     "position": "center",
 	"fullscreen": false,
     "width": 1400,
-    "height": 900,
-    "min_width": 200,
-    "min_height": 200
+    "height": 775,
+    "min_width": 1200,
+    "min_height": 775
   }
 }

@@ -46,10 +46,7 @@ class HeaderBarComponent extends React.Component {
         }else{
             portMenuItem =
                     serialDev.map(dev => (
-                    <MenuItem eventKey={{
-                        'path': dev.path,
-                        'type': dev.type
-                    }} key={dev.path}>{dev.path}</MenuItem>
+                    <MenuItem eventKey={dev} key={dev.path}>{dev.path}</MenuItem>
                 ));
             portDropdownTxt = Blockly.Msg.SERIAL_PORT_NOTCONNECTED;
         }

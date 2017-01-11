@@ -35,7 +35,7 @@ class GUI extends React.Component {
                         'stopProject','restoreFirmware','openIno','updateEditorInstance','uploadProject','appendLog',
                         'openLoadProjectDialog','loadProject','selectLanguage','applyConfig','selectTarget',
                         'consoleSend','consoleClear','translateCode','saveProject','changeTitle','notify',
-                        'updaterCallback','updateKittenblock','updateProgress','updateDone']);
+                        'updaterCallback','updateKittenblock','updateProgress','updateDone','resizeWindow']);
         this.vmManager = new VMManager(this.props.vm);
         this.mediaLibrary = new MediaLibrary();
         this.consoleMsgBuff=[{msg: "Hello KittenBlock", color: "green"}];
@@ -54,6 +54,7 @@ class GUI extends React.Component {
             alertTimeout: 5000,
             updater: {'version': 0, 'path': ''},
             updateProgress: 0,
+            windowHeight: window.innerHeight,
         };
     }
     clearConsole(){
@@ -119,6 +120,9 @@ class GUI extends React.Component {
         this.props.kb.notify = this.notify;
         // get latest version from server
         this.props.kb.updater.getServer(this.updaterCallback);
+        // bind window on resize method
+        window.onresize = this.resizeWindow;
+
     }
     componentWillReceiveProps (nextProps) {
         if (this.props.projectData !== nextProps.projectData) {
@@ -269,6 +273,10 @@ class GUI extends React.Component {
         console.log("do update"+this.state.updater.version);
         this.props.kb.doUpdate(this.state.updater,this.updateDone,this.updateProgress);
     }
+    resizeWindow(){
+        console.log("window "+window.innerHeight);
+        this.setState({windowHeight:window.innerHeight});
+    }
     render () {
         let {
             backdropLibraryProps,
@@ -344,6 +352,7 @@ class GUI extends React.Component {
             consoleMsg: this.state.consoleMsg,
             codeUpdate: this.updateEditorInstance,
             firmwares:this.state.firmwares,
+            windowHeight: this.state.windowHeight,
             restoreFirmware: (f)=>this.restoreFirmware(f),
             openIno: ()=>this.openIno(),
             uploadProj: ()=>this.uploadProject(),
