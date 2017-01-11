@@ -319,6 +319,7 @@ class GUI extends React.Component {
             visible: this.state.currentModal === 'sprite-library'
         });
         spriteSelectorProps = defaultsDeep({}, spriteSelectorProps, {
+            windowHeight: this.state.windowHeight,
             openNewBackdrop: () => this.openModal('backdrop-library'),
             openNewCostume: () => this.openModal('costume-library'),
             openNewSprite: () => this.openModal('sprite-library'),

@@ -16,6 +16,7 @@ class SpriteSelectorComponent extends React.Component {
             openNewCostume,
             openNewBackdrop,
             selectTarget,
+            windowHeight,
             kb,
             ...componentProps
         } = this.props;
@@ -53,7 +54,7 @@ class SpriteSelectorComponent extends React.Component {
                 top: 450,
                 left: 10,
                 width: 100,
-                height: 450,
+                height: windowHeight-450,
                 backgroundColor: "#F9F9F9",
                 borderRadius: 10
             }}>
@@ -65,7 +66,7 @@ class SpriteSelectorComponent extends React.Component {
                     top: 450,
                     left: 115,
                     width: 375,
-                    height: 450,
+                    height: windowHeight-450,
                     backgroundColor: "#F9F9F9",
                     borderRadius: 10
                 }}
