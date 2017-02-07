@@ -1,240 +1,1 @@
-/**
- * Created by Riven on 2016/12/24.
- */
-
-
-var Litebee = function (runtime) {
-    this.runtime = runtime
-    this.color = {
-        "primary": "#FF6680",
-        "secondary": "#FF4D6A",
-        "tertiary": "#FF3355"
-    };
-
-};
-
-Litebee.prototype.onRecv = function (data) {
-    //console.log("buf "+data.byteLength+">>"+data);
-
-}
-
-Litebee.prototype.getBlocks = function () {
-    var color = this.color;
-    return {
-        'litebee_calibrate': {
-            init: function() {
-                this.jsonInit({
-                    "id": "litebee_calibrate",
-                    "message0": "校准",
-                    "args0": [
-                    ],
-                    "inputsInline": true,
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": color.primary,
-                    "colourSecondary": color.secondary,
-                    "colourTertiary": color.tertiary
-                });
-            }
-        },
-        "litebee_led":{
-            init: function() {
-                this.jsonInit({
-                    "id": "litebee_led",
-                    "message0": "让 %1 LED %2",
-                    "args0": [
-                        {
-                            "type": "input_value",
-                            "name": "LITEBEE_LED_OPTION"
-                        },
-                        {
-                            "type": "input_value",
-                            "name": "LITEBEE_ONOFF_OPTION"
-                        },
-                    ],
-                    "inputsInline": true,
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": color.primary,
-                    "colourSecondary":color.secondary,
-                    "colourTertiary": color.tertiary
-                });
-            }
-        },
-        'litebee_led_option':{
-            /**
-             * kittenbot_direction_menu
-             * @this Blockly.Block
-             */
-            init: function() {
-                this.jsonInit(
-                    {
-                        "message0": "%1",
-                        "args0": [
-                            {
-                                "type": "field_dropdown",
-                                "name": "LITEBEE_LED_OPTION",
-                                "options": [
-                                    ['所有', 'ALL'],
-                                    ['A', 'A'],
-                                    ['B', 'B'],
-                                    ['C', 'C'],
-                                    ['D', 'D']
-                                ]
-                            }
-                        ],
-                        "inputsInline": true,
-                        "output": "String",
-                        "colour": color.secondary,
-                        "colourSecondary": color.secondary,
-                        "colourTertiary": color.tertiary
-                    });
-            }
-        },
-        'litebee_onoff_option':{
-            /**
-             * kittenbot_direction_menu
-             * @this Blockly.Block
-             */
-            init: function() {
-                this.jsonInit(
-                    {
-                        "message0": "%1",
-                        "args0": [
-                            {
-                                "type": "field_dropdown",
-                                "name": "LITEBEE_ONOFF_OPTION",
-                                "options": [
-                                    ['On', 'ON'],
-                                    ['Off', 'OFF']
-                                ]
-                            }
-                        ],
-                        "inputsInline": true,
-                        "output": "String",
-                        "colour": color.secondary,
-                        "colourSecondary": color.secondary,
-                        "colourTertiary": color.tertiary
-                    });
-            }
-        },
-
-    }
-}
-
-Litebee.prototype.getPrimitives = function() {
-    return {
-        'litebee_calibrate':this.litebee_calibrate,
-        'litebee_led':this.litebee_led
-    };
-};
-
-var lbSpeed=[0,0,0,0];
-var lbFourLed = 0;
-var lbColorLed = 0;
-var lbBeep = 0;
-function litebeeBuildCmd(msgCmd,speed,fourLed,colorLed,beep) {
-    var checkSum = 0;
-    if(speed[0] > 240){
-        speed[0] = 240;
-    }
-    if(speed[1] > 240){
-        speed[1] = 240;
-    }
-    if(speed[2] > 240){
-        speed[2] = 240;
-    }
-    if(speed[3] > 200){
-        speed[3] = 200;
-    }
-    if(speed[0] < 0){
-        speed[0] = 0;
-    }
-    if(speed[1] < 0){
-        speed[1] = 0;
-    }
-    if(speed[2] < 0){
-        speed[2] = 0;
-    }
-    if(speed[3] < 0){
-        speed[3] = 0;
-    }
-    checkSum ^= msgCmd;
-    checkSum ^= speed[0];
-    checkSum ^= speed[1];
-    checkSum ^= speed[2];
-    checkSum ^= speed[3];
-    checkSum ^= fourLed;
-    checkSum ^= colorLed;
-    checkSum ^= beep;
-    console.log("msgCmd:"+msgCmd+"  speed0:"+speed[0]+"  speed1:"+speed[1]+"  speed2:"+speed[2]+"  speed3:"+speed[3]+"  fourLed:"+fourLed+"  checksum:"+checkSum);
-    var msg = new Uint8Array([0x24,0x4d,0x3c,msgCmd,speed[0],speed[1],speed[2],speed[3],fourLed,colorLed,beep,checkSum]);
-    return msg;
-}
-
-Litebee.prototype.litebee_calibrate = function (argValues, util) {
-    var cmd = litebeeBuildCmd(5,lbSpeed,lbFourLed,lbColorLed,lbBeep);
-    util.ioQuery('serial', 'sendMsg', cmd);
-}
-
-Litebee.prototype.litebee_led = function (argValues, util) {
-    var led = argValues.LITEBEE_LED_OPTION;
-    var onoff = argValues.LITEBEE_ONOFF_OPTION;
-    if(led=="ALL"){
-        if(onoff=="ON"){
-            lbFourLed = 15;
-        }else{
-            lbFourLed &= 0;
-        }
-    }else if(led=='A'){
-        if(onoff=="ON"){
-            lbFourLed |= 1;
-        }else{
-            lbFourLed &= ~(1);
-        }
-    }else if(led=='B'){
-        if(onoff=="ON"){
-            lbFourLed |= 2;
-        }else{
-            lbFourLed &= ~(2);
-        }
-    }else if(led=='C'){
-        if(onoff=="ON"){
-            lbFourLed |= 4;
-        }else{
-            lbFourLed &= ~(4);
-        }
-    }else if(led=='D'){
-        if(onoff=="ON"){
-            lbFourLed |= 8;
-        }else{
-            lbFourLed &= ~(8);
-        }
-    }
-    var cmd = litebeeBuildCmd(6,lbSpeed,lbFourLed,lbColorLed,lbBeep);
-    util.ioQuery('serial', 'sendMsg', cmd);
-}
-
-
-
-Litebee.prototype.getToolbox = function () {
-    return '<category name="Litebee" colour="#FF6680" secondaryColour="#FF3355">'+
-        '<block type="litebee_calibrate">'+
-        '</block>'+
-        '<block type="litebee_led">'+
-        '<value name="LITEBEE_LED_OPTION">'+
-        '<shadow type="litebee_led_option"></shadow>'+
-        '</value>'+
-        '<value name="LITEBEE_ONOFF_OPTION">'+
-        '<shadow type="litebee_onoff_option"></shadow>'+
-        '</value>'+
-        '</block>'+
-        '</category>';
-}
-
-
-
-
-
-
-module.exports = Litebee;
+/** * Created by Riven on 2016/12/24. * Modify by redScarf on 2016.12.26 */var Litebee = function (runtime) {    this.runtime = runtime    this.color = {        "primary": "#FF6680",        "secondary": "#FF4D6A",        "tertiary": "#FF3355"    };};/* modify */var litebeeBlocks = new Object;litebeeBlocks.color = Litebee.color;litebeeBlocks.litebee_calibrate = {	init: function() {		this.jsonInit({			"id": "litebee_calibrate",			"message0": "校准",			"args0": [			],			"inputsInline": true,			"previousStatement": null,			"nextStatement": null,			"colour": litebeeBlocks.color.primary,			"colourSecondary": litebeeBlocks.color.secondary,			"colourTertiary": litebeeBlocks.color.tertiary		});	}};litebeeBlocks.litebee_led = {	init: function() {		this.jsonInit({			"id": "litebee_led",			"message0": "让 %1 LED %2",			"args0": [				{					"type": "input_value",					"name": "LITEBEE_LED_OPTION"				},				{					"type": "input_value",					"name": "LITEBEE_ONOFF_OPTION"				},			],			"inputsInline": true,			"previousStatement": null,			"nextStatement": null,			"colour": color.primary,			"colourSecondary":color.secondary,			"colourTertiary": color.tertiary		});	}};litebeeBlocks.litebee_led_option = {	init: function() {		this.jsonInit(			{				"message0": "%1",				"args0": [					{						"type": "field_dropdown",						"name": "LITEBEE_LED_OPTION",						"options": [							['所有', 'ALL'],							['A', 'A'],							['B', 'B'],							['C', 'C'],							['D', 'D']						]					}				],				"inputsInline": true,				"output": "String",				"colour": color.secondary,				"colourSecondary": color.secondary,				"colourTertiary": color.tertiary			});	}};litebeeBlocks.litebee_onoff_option = {	init: function() {		this.jsonInit(			{				"message0": "%1",				"args0": [					{						"type": "field_dropdown",						"name": "LITEBEE_ONOFF_OPTION",						"options": [							['On', 'ON'],							['Off', 'OFF']						]					}				],				"inputsInline": true,				"output": "String",				"colour": color.secondary,				"colourSecondary": color.secondary,				"colourTertiary": color.tertiary			});	}};/*        */Litebee.prototype.onRecv = function (data) {	var b = new Uint8Array(data);	var c = String.fromCharCode.apply(null, b);	var d = decodeURIComponent(escape(c));	if(c.length < 200){		var remoteData = JSON.parse(d)		//console.log("buf "+data.byteLength+">>");		window.vm.postIOData('serial', {slot: "RA", report: remoteData.roll/10.0});		window.vm.postIOData('serial', {slot: "PA", report: remoteData.pitch/10.0});		window.vm.postIOData('serial', {slot: "YA", report: remoteData.yaw/10.0});		window.vm.postIOData('serial', {slot: "V", report: (remoteData.voltage/30.0).toFixed(2)});		window.vm.postIOData('serial', {slot: "RS", report: remoteData.rollStick});		window.vm.postIOData('serial', {slot: "PS", report: remoteData.pitchStick});		window.vm.postIOData('serial', {slot: "TS", report: remoteData.thrStick});		window.vm.postIOData('serial', {slot: "YS", report: remoteData.yawStick});		console.log("version: remote "+remoteData.RVFV[0]+"."+remoteData.RVFV[1]+"."+remoteData.RVFV[2]);		if(remoteData.RVFV[4] != '5' && remoteData.RVFV[5] != '5'){			console.log("version: flight "+remoteData.RVFV[3]+"."+remoteData.RVFV[4]+"."+remoteData.RVFV[5]);		}else{			console.log("version: flight NaN");		}	}	}Litebee.prototype.getBlocks = function () {    var color = this.color;    return {        'litebee_calibrate': {            init: function() {                this.jsonInit({                    "id": "litebee_calibrate",                    "message0": "校准",                    "args0": [                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_arm': {            init: function() {                this.jsonInit({                    "id": "litebee_arm",                    "message0": "电机解锁",                    "args0": [                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_disarm': {            init: function() {                this.jsonInit({                    "id": "litebee_disarm",                    "message0": "电机上锁",                    "args0": [                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_colorLed': {            init: function() {                this.jsonInit({                    "id": "litebee_colorLed",                    "message0": "让彩灯亮 %1",                    "args0": [						{                            "type": "input_value",                            "name": "COLOR_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_motors': {            init: function() {                this.jsonInit({                    "id": "litebee_motors",                    "message0": "让 %1 电机以转速 %2 旋转",                    "args0": [						{                            "type": "input_value",                            "name": "MOTOR_OPTION"                        },						{                            "type": "input_value",                            "name": "SPEED_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_dir': {            init: function() {                this.jsonInit({                    "id": "litebee_dir",                    "message0": "往 %1 以速度 %2 飞行",                    "args0": [						{                            "type": "input_value",                            "name": "DIR_OPTION"                        },						{                            "type": "input_value",                            "name": "SPEED_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_rotate': {            init: function() {                this.jsonInit({                    "id": "litebee_rotate",                    "message0": "飞机 %1 以速度 %2 旋转",                    "args0": [						{                            "type": "input_value",                            "name": "ROTATE_OPTION"                        },						{                            "type": "input_value",                            "name": "SPEED_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_beep': {            init: function() {                this.jsonInit({                    "id": "litebee_beeper",                    "message0": "让蜂鸣器 %1",                    "args0": [						{                            "type": "input_value",                            "name": "BEEP_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_up': {            init: function() {                this.jsonInit({                    "id": "litebee_up",                    "message0": "让飞机往上以速度 %1 飞",                    "args0": [						{                            "type": "input_value",                            "name": "SPEED_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_altHold': {            init: function() {                this.jsonInit({                    "id": "litebee_altHold",                    "message0": "%1 定高",                    "args0": [						{                            "type": "input_value",                            "name": "LITEBEE_ONOFF_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary": color.secondary,                    "colourTertiary": color.tertiary                });            }        },        "litebee_led":{            init: function() {                this.jsonInit({                    "id": "litebee_led",                    "message0": "让 %1 LED %2",                    "args0": [                        {                            "type": "input_value",                            "name": "LITEBEE_LED_OPTION"                        },                        {                            "type": "input_value",                            "name": "LITEBEE_ONOFF_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary":color.secondary,                    "colourTertiary": color.tertiary                });            }        },		"litebee_trimPitch":{            init: function() {                this.jsonInit({                    "id": "litebee_trim",                    "message0": "飞行前后方向微调%1",                    "args0": [                        {                            "type": "input_value",                            "name": "TRIM_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary":color.secondary,                    "colourTertiary": color.tertiary                });            }        },		"litebee_trimRoll":{            init: function() {                this.jsonInit({                    "id": "litebee_trim",                    "message0": "飞行左右方向微调%1",                    "args0": [                        {                            "type": "input_value",                            "name": "TRIM_OPTION"                        },                    ],                    "inputsInline": true,                    "previousStatement": null,                    "nextStatement": null,                    "colour": color.primary,                    "colourSecondary":color.secondary,                    "colourTertiary": color.tertiary                });            }        },		'litebee_roll':{            init: function() {                this.jsonInit(                    {                        "message0": "横滚角",                        "args0": [                                                    ],                        "inputsInline": true,                        "output": "Number",                        "colour": color.primary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary,                        "outputShape": 2                    });            }        },		'litebee_pitch':{            init: function() {                this.jsonInit(                    {                        "message0": "俯仰角",                        "args0": [                                                    ],                        "inputsInline": true,                        "output": "Number",                        "colour": color.primary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary,                        "outputShape": 2                    });            }        },		'litebee_yaw':{            init: function() {                this.jsonInit(                    {                        "message0": "航向角",                        "args0": [                                                    ],                        "inputsInline": true,                        "output": "Number",                        "colour": color.primary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary,                        "outputShape": 2                    });            }        },		'litebee_voltage':{            init: function() {                this.jsonInit(                    {                        "message0": "电池电压",                        "args0": [                                                    ],                        "inputsInline": true,                        "output": "Number",                        "colour": color.primary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary,                        "outputShape": 2                    });            }        },		'litebee_rollStick':{            init: function() {                this.jsonInit(                    {                        "message0": "横滚摇杆值",                        "args0": [                                                    ],                        "inputsInline": true,                        "output": "Number",                        "colour": color.primary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary,                        "outputShape": 2                    });            }        },		'litebee_pitchStick':{            init: function() {                this.jsonInit(                    {                        "message0": "俯仰摇杆值",                        "args0": [                                                    ],                        "inputsInline": true,                        "output": "Number",                        "colour": color.primary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary,                        "outputShape": 2                    });            }        },		'litebee_throttleStick':{            init: function() {                this.jsonInit(                    {                        "message0": "油门摇杆值",                        "args0": [                                                    ],                        "inputsInline": true,                        "output": "Number",                        "colour": color.primary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary,                        "outputShape": 2                    });            }        },		'litebee_yawStick':{            init: function() {                this.jsonInit(                    {                        "message0": "航向摇杆值",                        "args0": [                                                    ],                        "inputsInline": true,                        "output": "Number",                        "colour": color.primary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary,                        "outputShape": 2                    });            }        },		// kittenbot_direction_menu		// @this Blockly.Block		'litebee_color_option':{            init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "COLOR_OPTION",                                "options": [                                    ['黑色', 'BLACK'],									['白色', 'WHITE'],									['红色', 'RED'],									['橙色', 'ORANGE'],									['黄色', 'YELLOW'],									['绿色', 'GREEN'],									['蓝色', 'BLUE'],									['粉色', 'PINK'],									['紫色', 'VIOLET']                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },		'litebee_beep_option':{            init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "BEEP_OPTION",                                "options": [                                    ['常开', 'ON'],									['关闭', 'OFF'],									['短鸣', 'LESS'],									['中鸣', 'MEDIUM'],									['长鸣', 'MORE'],                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },        'litebee_led_option':{            init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "LITEBEE_LED_OPTION",                                "options": [                                    ['所有', 'ALL'],                                    ['A', 'A'],                                    ['B', 'B'],                                    ['C', 'C'],                                    ['D', 'D']                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },		'litebee_motors_option':{            init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "MOTOR_OPTION",                                "options": [                                    ['所有', 'ALL'],                                    ['1号', 'A'],                                    ['2号', 'B'],                                    ['3号', 'C'],                                    ['4号', 'D']                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },		'litebee_rotate_option':{            init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "RATATE_OPTION",                                "options": [                                    ['顺时针', 'CCW'],                                    ['逆时针', 'CW']                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },		'litebee_dir_option':{            init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "DIR_OPTION",                                "options": [                                    ['前', 'FORWARD'],                                    ['后', 'BACKWARD'],                                    ['左', 'LEFT'],                                    ['右', 'RIGHT']                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },		'litebee_speed_option':{                        init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "SPEED_OPTION",                                "options": [									['0', '0'],                                    ['30', '30'],                                    ['50', '50'],									['70', '70'],                                    ['90', '90'],									['110', '110'],                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },		'litebee_trim_option':{                        init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "TRIM_OPTION",                                "options": [									['0', '0'],                                    ['-5', '-5'],                                    ['5', '5'],									['-10', '-10'],                                    ['10', '10'],									['-15', '-15'],									['15', '15'],                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },        'litebee_onoff_option':{                        init: function() {                this.jsonInit(                    {                        "message0": "%1",                        "args0": [                            {                                "type": "field_dropdown",                                "name": "LITEBEE_ONOFF_OPTION",                                "options": [                                    ['On', 'ON'],                                    ['Off', 'OFF']                                ]                            }                        ],                        "inputsInline": true,                        "output": "String",                        "colour": color.secondary,                        "colourSecondary": color.secondary,                        "colourTertiary": color.tertiary                    });            }        },    }}Litebee.prototype.getPrimitives = function() {    return {        'litebee_calibrate':this.litebee_calibrate,        'litebee_led':this.litebee_led,		'litebee_colorLed':this.litebee_colorLed,		'litebee_beep':this.litebee_beeper,		'litebee_arm':this.litebee_arm,		'litebee_disarm':this.litebee_disarm,		'litebee_motors':this.litebee_motors,		'litebee_dir':this.litebee_dir,		'litebee_rotate':this.litebee_rotate,		'litebee_up':this.litebee_up,		'litebee_altHold':this.litebee_altHold,		'litebee_trimPitch':this.litebee_trimPitch,		'litebee_trimRoll':this.litebee_trimRoll,		'litebee_roll':this.litebee_roll,		'litebee_pitch':this.litebee_pitch,		'litebee_yaw':this.litebee_yaw,		'litebee_rollStick':this.litebee_rollStick,		'litebee_pitchStick':this.litebee_pitchStick,		'litebee_yawStick':this.litebee_yawStick,		'litebee_throttleStick':this.litebee_throttleStick,		'litebee_voltage':this.litebee_voltage,    };};var lbSpeed=[0,0,0,0];var lbFourLed = 0;var lbColorLed = 0;var lbBeep = 0;var lbTrim=[0,0];function litebeeBuildCmd(msgCmd,speed,fourLed,colorLed,beep) {    var checkSum = 0;    if(speed[0] > 240){        speed[0] = 240;    }    if(speed[1] > 240){        speed[1] = 240;    }    if(speed[2] > 240){        speed[2] = 240;    }    if(speed[3] > 200){        speed[3] = 200;    }    if(speed[0] < 0){        speed[0] = 0;    }    if(speed[1] < 0){        speed[1] = 0;    }    if(speed[2] < 0){        speed[2] = 0;    }    if(speed[3] < 0){        speed[3] = 0;    }    checkSum ^= msgCmd;    checkSum ^= speed[0];    checkSum ^= speed[1];    checkSum ^= speed[2];    checkSum ^= speed[3];    checkSum ^= fourLed;    checkSum ^= colorLed;    checkSum ^= beep;    console.log("msgCmd:"+msgCmd+"  speed0:"+speed[0]+"  speed1:"+speed[1]+"  speed2:"+speed[2]+"  speed3:"+speed[3]+"  fourLed:"+fourLed+"  colorLed:"+colorLed+"  beep"+beep);    var msg = new Uint8Array([0x24,0x4d,0x3c,msgCmd,speed[0],speed[1],speed[2],speed[3],fourLed,colorLed,beep,checkSum]);    return msg;}Litebee.prototype.litebee_calibrate = function (argValues, util) {    var cmd = litebeeBuildCmd(5,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);}Litebee.prototype.litebee_roll = function (argValues, util) {	var rollAngle = new Promise(function(resolve) {        util.ioQuery('serial', 'regResolve', {"slot":("RA"), "resolve":resolve});    });    return rollAngle;}Litebee.prototype.litebee_pitch = function (argValues, util) {    var pitchAngle = new Promise(function(resolve) {        util.ioQuery('serial', 'regResolve', {"slot":("PA"), "resolve":resolve});    });    return pitchAngle;}Litebee.prototype.litebee_yaw = function (argValues, util) {    var yawAngle = new Promise(function(resolve) {        util.ioQuery('serial', 'regResolve', {"slot":("YA"), "resolve":resolve});    });    return yawAngle;}Litebee.prototype.litebee_rollStick = function (argValues, util) {    var rollStick = new Promise(function(resolve) {        util.ioQuery('serial', 'regResolve', {"slot":("RS"), "resolve":resolve});    });    return rollStick;}Litebee.prototype.litebee_pitchStick = function (argValues, util) {    var pitchStick = new Promise(function(resolve) {        util.ioQuery('serial', 'regResolve', {"slot":("PS"), "resolve":resolve});    });    return pitchStick;}Litebee.prototype.litebee_throttleStick = function (argValues, util) {    var thrStick = new Promise(function(resolve) {        util.ioQuery('serial', 'regResolve', {"slot":("TS"), "resolve":resolve});    });    return thrStick;}Litebee.prototype.litebee_yawStick = function (argValues, util) {    var yawStick = new Promise(function(resolve) {        util.ioQuery('serial', 'regResolve', {"slot":("YS"), "resolve":resolve});    });    return yawStick;}Litebee.prototype.litebee_voltage = function (argValues, util) {    var voltage = new Promise(function(resolve) {        util.ioQuery('serial', 'regResolve', {"slot":("V"), "resolve":resolve});    });    return voltage;}Litebee.prototype.litebee_altHold = function (argValues, util) {	var onoff = argValues.LITEBEE_ONOFF_OPTION;	if(onoff == "ON")	{		var cmd = litebeeBuildCmd(3,lbSpeed,lbFourLed,lbColorLed,lbBeep);		util.ioQuery('serial', 'sendMsg', cmd);	}else{		var cmd = litebeeBuildCmd(4,lbSpeed,lbFourLed,lbColorLed,lbBeep);		util.ioQuery('serial', 'sendMsg', cmd);	}    }Litebee.prototype.litebee_trimPitch = function (argValues, util) {	lbTrim[1] = Number(argValues.TRIM_OPTION);}Litebee.prototype.litebee_trimRoll = function (argValues, util) {	lbTrim[0] = Number(argValues.TRIM_OPTION);}Litebee.prototype.litebee_up = function (argValues, util) {	lbSpeed = [125+lbTrim[0],125+lbTrim[1],125,argValues.SPEED_OPTION];    var cmd = litebeeBuildCmd(10,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);}Litebee.prototype.litebee_arm = function (argValues, util) {	lbSpeed = [125+lbTrim[0],125+lbTrim[1],125,0];    var cmd = litebeeBuildCmd(1,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);	}Litebee.prototype.litebee_disarm = function (argValues, util) {    var cmd = litebeeBuildCmd(2,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);	lbSpeed = [0,0,0,0];}Litebee.prototype.litebee_led = function (argValues, util) {    var led = argValues.LITEBEE_LED_OPTION;    var onoff = argValues.LITEBEE_ONOFF_OPTION;    if(led=="ALL"){        if(onoff=="ON"){            lbFourLed = 15;        }else{            lbFourLed &= 0;        }    }else if(led=='A'){        if(onoff=="ON"){            lbFourLed |= 1;        }else{            lbFourLed &= ~(1);        }    }else if(led=='B'){        if(onoff=="ON"){            lbFourLed |= 2;        }else{            lbFourLed &= ~(2);        }    }else if(led=='C'){        if(onoff=="ON"){            lbFourLed |= 4;        }else{            lbFourLed &= ~(4);        }    }else if(led=='D'){        if(onoff=="ON"){            lbFourLed |= 8;        }else{            lbFourLed &= ~(8);        }    }    var cmd = litebeeBuildCmd(6,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);}Litebee.prototype.litebee_motors = function (argValues, util) {    var motor = argValues.MOTOR_OPTION;    var speed = Number(argValues.SPEED_OPTION);	console.log("speed:"+speed+" motor:"+motor);    if(motor=="ALL"){        lbSpeed = [speed,speed,speed,speed];    }else if(motor=='A'){        lbSpeed[0] = speed;    }else if(motor=='B'){        lbSpeed[1] = speed;    }else if(motor=='C'){        lbSpeed[2] = speed;    }else if(motor=='D'){        lbSpeed[3] = speed;    }    var cmd = litebeeBuildCmd(9,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);}Litebee.prototype.litebee_dir = function (argValues, util) {    var dir = argValues.DIR_OPTION;    var speed = argValues.SPEED_OPTION;	console.log("dir: "+dir+" speed "+speed);    if(dir=='FORWARD'){        lbSpeed[1] = 125 + Number(speed) + lbTrim[1];    }else if(dir=='BACKWARD'){        lbSpeed[1] = 125 - Number(speed) + lbTrim[1];    }else if(dir=='LEFT'){        lbSpeed[0] = 125 - Number(speed) + lbTrim[0];    }else if(dir=='RIGHT'){        lbSpeed[0] = 125 + Number(speed) + lbTrim[0];    }    var cmd = litebeeBuildCmd(10,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);}Litebee.prototype.litebee_rotate = function (argValues, util) {    var dir = argValues.ROTATE_OPTION;    var speed = argValues.SPEED_OPTION;    if(dir=='CCW'){        lbSpeed[2] = 125 + Number(speed);    }else if(dir=='CW'){        lbSpeed[2] = 125 - Number(speed);    }    var cmd = litebeeBuildCmd(10,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);}Litebee.prototype.litebee_colorLed = function (argValues, util){	var COLOR = {		"BLACK":0,		"WHITE":1,		"RED":2,		"ORANGE":3,		"YELLOW":4,		"GREEN":5,		"BLUE":6,		"PINK":7,		"VIOLET":8,	};	lbColorLed = COLOR[argValues.COLOR_OPTION];		var cmd = litebeeBuildCmd(8,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);}Litebee.prototype.litebee_beeper = function (argValues, util){	var beep = argValues.BEEP_OPTION;	if(beep == "ON"){		lbBeep = 5;	}else if(beep == "OFF"){		lbBeep = 1;	}else if(beep == "LESS"){		lbBeep = 2;	}else if(beep == "MEDIUM"){		lbBeep = 3;	}else if(beep == "MORE"){		lbBeep = 4;	}	var cmd = litebeeBuildCmd(7,lbSpeed,lbFourLed,lbColorLed,lbBeep);    util.ioQuery('serial', 'sendMsg', cmd);}Litebee.prototype.getToolbox = function () {    return '<category name="Litebee" colour="#FF6680" secondaryColour="#FF3355">'+        '<block type="litebee_calibrate">'+        '</block>'+		'<block type="litebee_arm">'+        '</block>'+		'<block type="litebee_disarm">'+        '</block>'+		'<block type="litebee_colorLed">'+		'<value name="COLOR_OPTION">'+        '<shadow type="litebee_color_option"></shadow>'+        '</value>'+        '</block>'+		'<block type="litebee_beep">'+		'<value name="BEEP_OPTION">'+        '<shadow type="litebee_beep_option"></shadow>'+        '</value>'+        '</block>'+        '<block type="litebee_led">'+        '<value name="LITEBEE_LED_OPTION">'+        '<shadow type="litebee_led_option"></shadow>'+        '</value>'+        '<value name="LITEBEE_ONOFF_OPTION">'+        '<shadow type="litebee_onoff_option"></shadow>'+        '</value>'+        '</block>'+		'<block type="litebee_motors">'+        '<value name="MOTOR_OPTION">'+        '<shadow type="litebee_motors_option"></shadow>'+        '</value>'+        '<value name="SPEED_OPTION">'+        '<shadow type="litebee_speed_option"></shadow>'+		        '</value>'+        '</block>'+		'<block type="litebee_dir">'+        '<value name="DIR_OPTION">'+        '<shadow type="litebee_dir_option"></shadow>'+        '</value>'+        '<value name="SPEED_OPTION">'+        '<shadow type="litebee_speed_option"></shadow>'+		        '</value>'+        '</block>'+		'<block type="litebee_rotate">'+        '<value name="ROTATE_OPTION">'+        '<shadow type="litebee_rotate_option"></shadow>'+        '</value>'+        '<value name="SPEED_OPTION">'+        '<shadow type="litebee_speed_option"></shadow>'+		        '</value>'+        '</block>'+		'<block type="litebee_up">'+		'<value name="SPEED_OPTION">'+        '<shadow type="litebee_speed_option"></shadow>'+		        '</value>'+        '</block>'+		'<block type="litebee_altHold">'+		'<value name="LITEBEE_ONOFF_OPTION">'+        '<shadow type="litebee_onoff_option"></shadow>'+        '</value>'+        '</block>'+		'<block type="litebee_trimPitch">'+		'<value name="TRIM_OPTION">'+        '<shadow type="litebee_trim_option"></shadow>'+        '</value>'+		'</block>'+		'<block type="litebee_trimRoll">'+		'<value name="TRIM_OPTION">'+        '<shadow type="litebee_trim_option"></shadow>'+        '</value>'+        '</block>'+		'<block type="litebee_roll">'+        '</block>'+		'<block type="litebee_pitch">'+        '</block>'+		'<block type="litebee_yaw">'+        '</block>'+		'<block type="litebee_voltage">'+        '</block>'+		'<block type="litebee_rollStick">'+        '</block>'+		'<block type="litebee_pitchStick">'+        '</block>'+		'<block type="litebee_yawStick">'+        '</block>'+		'<block type="litebee_throttleStick">'+        '</block>'+        '</category>';}module.exports = Litebee;
