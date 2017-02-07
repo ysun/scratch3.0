@@ -1,7 +1,7 @@
-var path = require('path');
-var webpack = require('webpack');
+const path = require('path');
+const webpack = require('webpack');
 
-var base = {
+const base = {
     devServer: {
         contentBase: path.resolve(__dirname, 'playground'),
         host: '0.0.0.0',
@@ -13,6 +13,7 @@ var base = {
             colors: true
         }
     },
+    devtool: 'source-map',
     module: {
         loaders: [
             {
@@ -47,28 +48,40 @@ var base = {
 };
 
 module.exports = [
-    // Web-compatible
+    // Playground
     Object.assign({}, base, {
+        target: 'web',
         entry: {
-            'render': './src/index-web.js',
-            'playground/render': './src/index-web.js',
-            'render.min': './src/index-web.js'
+            'scratch-render': './src/index-web.js'
         },
         output: {
-            path: __dirname,
+            path: path.resolve(__dirname, 'playground'),
             filename: '[name].js'
         }
     }),
-    // Webpack-compatible
+    // Web-compatible
     Object.assign({}, base, {
+        target: 'web',
         entry: {
-            'render': './src/index.js'
+            'scratch-render': './src/index-web.js',
+            'scratch-render.min': './src/index-web.js'
+        },
+        output: {
+            path: path.resolve(__dirname, 'dist/web'),
+            filename: '[name].js'
+        }
+    }),
+    // Node-compatible
+    Object.assign({}, base, {
+        target: 'node',
+        entry: {
+            'scratch-render': './src/index.js'
         },
         output: {
             library: 'ScratchRender',
             libraryTarget: 'commonjs2',
-            path: __dirname,
-            filename: 'dist.js'
+            path: path.resolve(__dirname, 'dist/node'),
+            filename: '[name].js'
         }
     })
 ];

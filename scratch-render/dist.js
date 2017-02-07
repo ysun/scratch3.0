@@ -689,11 +689,11 @@ module.exports =
 	RenderWebGL.prototype._getConvexHullPointsForDrawable = function (drawableID) {
 	    var drawable = Drawable.getDrawableByID(drawableID);
 
-	    var _drawable$_uniforms$u = _slicedToArray(drawable._uniforms.u_skinSize, 2),
-	        width = _drawable$_uniforms$u[0],
-	        height = _drawable$_uniforms$u[1];
-	    // No points in the hull if invisible or size is 0.
+	    var _drawable$_uniforms$u = _slicedToArray(drawable._uniforms.u_skinSize, 2);
 
+	    var width = _drawable$_uniforms$u[0];
+	    var height = _drawable$_uniforms$u[1];
+	    // No points in the hull if invisible or size is 0.
 
 	    if (!drawable.getVisible() || width == 0 || height == 0) {
 	        return [];

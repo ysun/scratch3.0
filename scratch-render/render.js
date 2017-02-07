@@ -7333,9 +7333,8 @@
 	  runtime = global.regeneratorRuntime = inModule ? module.exports : {};
 
 	  function wrap(innerFn, outerFn, self, tryLocsList) {
-	    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
-	    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
-	    var generator = Object.create(protoGenerator.prototype);
+	    // If outerFn provided, then outerFn.prototype instanceof Generator.
+	    var generator = Object.create((outerFn || Generator).prototype);
 	    var context = new Context(tryLocsList || []);
 
 	    // The ._invoke method unifies the implementations of the .next,
@@ -8820,11 +8819,11 @@
 	RenderWebGL.prototype._getConvexHullPointsForDrawable = function (drawableID) {
 	    var drawable = Drawable.getDrawableByID(drawableID);
 
-	    var _drawable$_uniforms$u = _slicedToArray(drawable._uniforms.u_skinSize, 2),
-	        width = _drawable$_uniforms$u[0],
-	        height = _drawable$_uniforms$u[1];
-	    // No points in the hull if invisible or size is 0.
+	    var _drawable$_uniforms$u = _slicedToArray(drawable._uniforms.u_skinSize, 2);
 
+	    var width = _drawable$_uniforms$u[0];
+	    var height = _drawable$_uniforms$u[1];
+	    // No points in the hull if invisible or size is 0.
 
 	    if (!drawable.getVisible() || width == 0 || height == 0) {
 	        return [];
