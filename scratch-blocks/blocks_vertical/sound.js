@@ -27,7 +27,7 @@ goog.require('Blockly.Colours');
 goog.require('Blockly.constants');
 
 
-Blockly.Blocks['sound_sounds_option'] = {
+Blockly.Blocks['sound_sounds_menu'] = {
   /**
    * Sound effects drop-down menu.
    * @this Blockly.Block
@@ -110,35 +110,6 @@ Blockly.Blocks['sound_playuntildone'] = {
   }
 };
 
-Blockly.Blocks['sound_playwithpitch'] = {
-  /**
-   * Block to play sound with pitch shift.
-   * @this Blockly.Block
-   */
-  init: function() {
-    this.jsonInit({
-      "message0": Blockly.Msg.SOUND_PLAYWITHPITCH,
-      "args0": [
-        {
-          "type": "input_value",
-          "name": "SOUND_NUM"
-        },
-        {
-          "type": "input_value",
-          "name": "PITCH"
-        }
-      ],
-      "inputsInline": true,
-      "previousStatement": null,
-      "nextStatement": null,
-      "category": Blockly.Categories.sound,
-      "colour": Blockly.Colours.sounds.primary,
-      "colourSecondary": Blockly.Colours.sounds.secondary,
-      "colourTertiary": Blockly.Colours.sounds.tertiary
-    });
-  }
-};
-
 Blockly.Blocks['sound_stopallsounds'] = {
   /**
    * Block to stop all sounds
@@ -146,7 +117,7 @@ Blockly.Blocks['sound_stopallsounds'] = {
    */
   init: function() {
     this.jsonInit({
-      "message0": Blockly.Msg.SOUND_STOPALLSOUND,
+      "message0": "stop all sounds",
       "previousStatement": null,
       "nextStatement": null,
       "category": Blockly.Categories.sound,
@@ -157,9 +128,10 @@ Blockly.Blocks['sound_stopallsounds'] = {
   }
 };
 
-Blockly.Blocks['sound_beats_menu'] = {
+
+Blockly.Blocks['sound_drums_menu'] = {
   /**
-   * Sound beats drop-down menu.
+   * Drums drop-down menu.
    * @this Blockly.Block
    */
   init: function() {
@@ -169,14 +141,26 @@ Blockly.Blocks['sound_beats_menu'] = {
         "args0": [
           {
             "type": "field_dropdown",
-            "name": "BEATS",
+            "name": "DRUM",
             "options": [
-              ['1/8', '0.125'],
-              ['1/4', '0.25'],
-              ['1/2', '0.5'],
-              ['1', '1'],
-              ['2', '2'],
-              ['4', '4']
+              ['(1) Snare Drum', '1'],
+              ['(2) Bass Drum', '2'],
+              ['(3) Side Stick', '3'],
+              ['(4) Crash Cymbal', '4'],
+              ['(5) Open Hi-Hat', '5'],
+              ['(6) Closed Hi-Hat', '6'],
+              ['(7) Tambourine', '7'],
+              ['(8) Hand Clap', '8'],
+              ['(9) Claves', '9'],
+              ['(10) Wood Block', '10'],
+              ['(11) Cowbell', '11'],
+              ['(12) Triangle', '12'],
+              ['(13) Bongo', '13'],
+              ['(14) Conga', '14'],
+              ['(15) Cabasa', '15'],
+              ['(16) Guiro', '16'],
+              ['(17) Vibraslap', '17'],
+              ['(18) Open Cuica', '18']
             ]
           }
         ],
@@ -190,33 +174,11 @@ Blockly.Blocks['sound_beats_menu'] = {
   }
 };
 
-Blockly.Blocks['sound_playdrum'] = {
-  /**
-   * Block to play a certain drum
-   * @this Blockly.Block
-   */
-  init: function() {
-    this.jsonInit({
-      "message0": Blockly.Msg.SOUND_PLAYDRUM,
-      "args0": [
-        {
-          "type": "input_value",
-          "name": "DRUMTYPE"
-        }
-      ],
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": Blockly.Colours.sounds.primary,
-      "colourSecondary": Blockly.Colours.sounds.secondary,
-      "colourTertiary": Blockly.Colours.sounds.tertiary
-    });
-  }
-};
 
 
 Blockly.Blocks['sound_playdrumforbeats'] = {
   /**
-   * Block to play a certain drum for certain beats
+   * Block to play a drum for some number of beats
    * @this Blockly.Block
    */
   init: function() {
@@ -225,7 +187,7 @@ Blockly.Blocks['sound_playdrumforbeats'] = {
       "args0": [
         {
           "type": "input_value",
-          "name": "DRUMTYPE"
+          "name": "DRUM"
         },
         {
           "type": "input_value",
@@ -244,7 +206,7 @@ Blockly.Blocks['sound_playdrumforbeats'] = {
 
 Blockly.Blocks['sound_restforbeats'] = {
   /**
-   * Block to rest for certain beats
+   * Block to rest for some number of beats
    * @this Blockly.Block
    */
   init: function() {
@@ -266,38 +228,15 @@ Blockly.Blocks['sound_restforbeats'] = {
   }
 };
 
-Blockly.Blocks['sound_playnote'] = {
-  /**
-   * Block to play a certain note for certain beats
-   * @this Blockly.Block
-   */
-  init: function() {
-    this.jsonInit({
-      "message0": Blockly.Msg.SOUND_PLAYNOTE,
-      "args0": [
-        {
-          "type": "input_value",
-          "name": "NOTE"
-        }
-      ],
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": Blockly.Colours.sounds.primary,
-      "colourSecondary": Blockly.Colours.sounds.secondary,
-      "colourTertiary": Blockly.Colours.sounds.tertiary
-    });
-  }
-};
-
 
 Blockly.Blocks['sound_playnoteforbeats'] = {
   /**
-   * Block to play a certain note for certain beats
+   * Block to play a certain note for some number of beats
    * @this Blockly.Block
    */
   init: function() {
     this.jsonInit({
-      "message0": Blockly.Msg.SOUND_PLAYNOTEFORBEATS,
+      "message0": "play note %1 for %2 beats",
       "args0": [
         {
           "type": "input_value",
@@ -311,103 +250,6 @@ Blockly.Blocks['sound_playnoteforbeats'] = {
       "previousStatement": null,
       "nextStatement": null,
       "category": Blockly.Categories.sound,
-      "colour": Blockly.Colours.sounds.primary,
-      "colourSecondary": Blockly.Colours.sounds.secondary,
-      "colourTertiary": Blockly.Colours.sounds.tertiary
-    });
-  }
-};
-
-Blockly.Blocks['sound_scales_menu'] = {
-  /**
-   * Sound scales drop-down menu.
-   * @this Blockly.Block
-   */
-  init: function() {
-    this.jsonInit(
-      {
-        "message0": "%1",
-        "args0": [
-          {
-            "type": "field_dropdown",
-            "name": "SCALE",
-            "options": [
-              ['major', 'MAJOR'],
-              ['minor', 'MINOR'],
-              ['pentatonic', 'PENTATONIC'],
-              ['chromatic', 'CHROMATIC']
-            ]
-          }
-        ],
-        "inputsInline": true,
-        "output": "String",
-        "colour": Blockly.Colours.sounds.secondary,
-        "colourSecondary": Blockly.Colours.sounds.secondary,
-        "colourTertiary": Blockly.Colours.sounds.tertiary,
-        "outputShape": Blockly.OUTPUT_SHAPE_ROUND
-      });
-  }
-};
-
-Blockly.Blocks['sound_roots_menu'] = {
-  /**
-   * Sound roots drop-down menu.
-   * @this Blockly.Block
-   */
-  init: function() {
-    this.jsonInit(
-      {
-        "message0": "%1",
-        "args0": [
-          {
-            "type": "field_dropdown",
-            "name": "ROOT",
-            "options": [
-              ['C', '0'],
-              ['C#', '1'],
-              ['D', '2'],
-              ['D#', '3'],
-              ['E', '4'],
-              ['F', '5'],
-              ['F#', '6'],
-              ['G', '7'],
-              ['G#', '8'],
-              ['A', '9'],
-              ['A#', '10'],
-              ['B', '11']
-            ]
-          }
-        ],
-        "inputsInline": true,
-        "output": "String",
-        "colour": Blockly.Colours.sounds.secondary,
-        "colourSecondary": Blockly.Colours.sounds.secondary,
-        "colourTertiary": Blockly.Colours.sounds.tertiary,
-        "outputShape": Blockly.OUTPUT_SHAPE_ROUND
-      });
-  }
-};
-
-Blockly.Blocks['sound_setkey'] = {
-  /**
-   * Block to set the musical key and scale for the play note block
-   * @this Blockly.Block
-   */
-  init: function() {
-    this.jsonInit({
-      "message0": Blockly.Msg.SOUND_SETKEY,
-      "args0": [
-        {
-          "type": "input_value",
-          "name": "ROOT"
-        },
-        {
-          "type": "input_value",
-          "name": "SCALE"
-        }
-      ],
-      "previousStatement": null,
-      "nextStatement": null,
       "colour": Blockly.Colours.sounds.primary,
       "colourSecondary": Blockly.Colours.sounds.secondary,
       "colourTertiary": Blockly.Colours.sounds.tertiary
@@ -429,10 +271,12 @@ Blockly.Blocks['sound_effects_menu'] = {
             "type": "field_dropdown",
             "name": "EFFECT",
             "options": [
-              ['echo', 'ECHO'],
+              ['pitch', 'PITCH'],
               ['pan left/right', 'PAN'],
+              ['echo', 'ECHO'],
               ['reverb', 'REVERB'],
-              ['pitch', 'PITCH']
+              ['fuzz', 'FUZZ'],
+              ['robot', 'ROBOT']
             ]
           }
         ],
@@ -518,6 +362,53 @@ Blockly.Blocks['sound_cleareffects'] = {
   }
 };
 
+Blockly.Blocks['sound_instruments_menu'] = {
+  /**
+   * Instruments drop-down menu.
+   * @this Blockly.Block
+   */
+  init: function() {
+    this.jsonInit(
+      {
+        "message0": "%1",
+        "args0": [
+          {
+            "type": "field_dropdown",
+            "name": "INSTRUMENT",
+            "options": [
+              ['(1) Piano', '1'],
+              ['(2) Electric Piano', '2'],
+              ['(3) Organ', '3'],
+              ['(4) Guitar', '4'],
+              ['(5) Electric Guitar', '5'],
+              ['(6) Bass', '6'],
+              ['(7) Pizzicato', '7'],
+              ['(8) Cello', '8'],
+              ['(9) Trombone', '9'],
+              ['(10) Clarinet', '10'],
+              ['(11) Saxophone', '11'],
+              ['(12) Flute', '12'],
+              ['(13) Wooden Flute', '13'],
+              ['(14) Bassoon', '14'],
+              ['(15) Choir', '15'],
+              ['(16) Vibraphone', '16'],
+              ['(17) Music Box', '17'],
+              ['(18) Steel Drum', '18'],
+              ['(19) Marimba', '19'],
+              ['(20) Synth Lead', '20'],
+              ['(21) Synth Pad', '21']
+            ]
+          }
+        ],
+        "inputsInline": true,
+        "output": "String",
+        "colour": Blockly.Colours.sounds.secondary,
+        "colourSecondary": Blockly.Colours.sounds.secondary,
+        "colourTertiary": Blockly.Colours.sounds.tertiary,
+        "outputShape": Blockly.OUTPUT_SHAPE_ROUND
+      });
+  }
+};
 Blockly.Blocks['sound_setinstrumentto'] = {
   /**
    * Block to set the sprite's instrument to a certain value
