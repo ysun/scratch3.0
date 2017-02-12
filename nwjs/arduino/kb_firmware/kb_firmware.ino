@@ -10,10 +10,11 @@ Adafruit_NeoPixel rgbled(16);
 AccelStepper stp1(AccelStepper::FULL4WIRE, 5, 9, 6, 10);
 AccelStepper stp2(AccelStepper::FULL4WIRE, 7, 12, 8, 13);
 
-#define FIRMWARE "KITTENBOT V1.7\n"
+#define FIRMWARE "KITTENBOT V1.71\n"
 
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
+bool stepMoving = false;
 
 // parse pin, 0~13 digital, 14.. analog pin
 void parsePinVal(char * cmd,int * pin){
@@ -53,8 +54,6 @@ void parsePinVal(char * cmd,int * pin, int * v0, int * v1, int * v2, int * v3){
 	}
 }
 
-
-
 // parse left or right value
 void parseLR(char * cmd, int * lvalue, int * rvalue){
 	char * tmp;
@@ -70,6 +69,32 @@ void parseLR(char * cmd, int * lvalue, int * rvalue){
 		*lvalue = atoi(str+1);
 	  }else if(str[0]=='R'){
 		*rvalue = atoi(str+1);
+	  }
+	}
+}
+
+
+// parse left or right value
+void parseLR(char * cmd, int * lvalue, int * rvalue, int * lspd, int * rspd){
+	char * tmp;
+	char * str;
+	*lvalue = 0;
+	*rvalue = 0;
+        *lspd = 400;
+        *rspd = 400;
+
+	str = cmd;
+	tmp = cmd;
+	while(str!=NULL){
+	  str = strtok_r(0, " ", &tmp);
+	  if(str[0]=='L'){
+		*lvalue = atoi(str+1);
+	  }else if(str[0]=='R'){
+		*rvalue = atoi(str+1);
+	  }else if(str[0]=='A'){
+		*lspd = atoi(str+1);
+	  }else if(str[0]=='B'){
+		*rspd = atoi(str+1);
 	  }
 	}
 
@@ -180,13 +205,17 @@ void doRgb(char * cmd){
 
 // --- M100 ---
 void doStepperSpeed(char * cmd){
-  int spdL,spdR;
-  parseLR(cmd,&spdL,&spdR);
-
+  int posL,posR,spdL,spdR;
+  parseLR(cmd,&posL,&posR,&spdL,&spdR);
+  
+  stp1.move(posL);
   stp1.setSpeed(spdL);
+  stp2.move(posR);
   stp2.setSpeed(spdR);
   if(spdL==0 && spdR==0){
 	doDisableStepper();
+  }else{
+    stepMoving = true;
   }
 
 }
@@ -421,7 +450,7 @@ void parseMcode(char * cmd){
 	case 15: // query analog
 	  attachQueryAnalog(tmp);
 	  break;	
-    case 100: // set stepper max speed: M100 L100 R200
+    case 100: // set stepper move speed and position
       doStepperSpeed(tmp);
       break;
     case 101: // step: M101 L1000 R-2000
@@ -501,8 +530,16 @@ void loop() {
       bufindex=0;
     }
   }
-  stp1.runSpeed();
-  stp2.runSpeed();
+
+  if(stp1.distanceToGo()!=0 || stp2.distanceToGo()!=0){
+    stp1.runSpeedToPosition();
+    stp2.runSpeedToPosition();
+  }else{
+    if(stepMoving==true){
+      stepMoving = false;
+      Serial.println("M100");
+    }
+  }
 
   timeMillis= millis();
   if (timeMillis - lastMillis> 100) {
