@@ -410,7 +410,8 @@ KittenBot.prototype.getPrimitives = function() {
         'kittenbot_motor_dc': this.motorDc,
         'kittenbot_steppermove': this.stepperMove,
         'kittenbot_stepperturn': this.stepperTurn,
-        'kittenbot_stepperspeed': this.stepperSpeed,
+        'kittenbot_stepperspeed_single': this.stepperSpeedSingle,
+        'kittenbot_stepperspeed_dual': this.stepperSpeedDual,
         'kittenbot_stop': this.motorStop,
         'kittenbot_rgb': this.rgbPixels,
         'kittenbot_distance': this.distance,
@@ -432,7 +433,24 @@ KittenBot.prototype.stepperMove = function(argValues, util) {
     return exePromise;
 };
 
-KittenBot.prototype.stepperSpeed = function(argValues, util) {
+KittenBot.prototype.stepperSpeedSingle = function(argValues, util) {
+    var stpIdx = argValues.KITTENBOT_STEPPER_OPTION;
+    var pos = Math.floor(argValues.POS/360*KittenBot.PULSE_PER_ROUND);
+    var spd = Math.floor(argValues.SPEED*KittenBot.PULSE_PER_ROUND/60); // change rpm to pulse per second
+    if(stpIdx=='A'){
+        var cmd = "M100 L"+pos+" A"+spd;
+    }else{
+        var cmd = "M100 R"+pos+" B"+spd;
+    }
+
+    var exePromise = new Promise(function(resolve) {
+        util.ioQuery('serial', 'sendMsg', cmd);
+        util.ioQuery('serial', 'regResolve', {"slot":"M100", "resolve":resolve});
+    });
+    return exePromise;
+};
+
+KittenBot.prototype.stepperSpeedDual = function(argValues, util) {
     var posL = Math.floor(argValues.POSL/360*KittenBot.PULSE_PER_ROUND);
     var posR = Math.floor(argValues.POSR/360*KittenBot.PULSE_PER_ROUND);
     var spdL = Math.floor(argValues.SPDL*KittenBot.PULSE_PER_ROUND/60); // change rpm to pulse per second
