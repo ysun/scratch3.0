@@ -15,3 +15,24 @@ npm-*
 # Build
 /build
 /.opt-in
+/nwjs/icudtl.dat
+/nwjs/nw_100_percent.pak
+/nwjs/nw_200_percent.pak
+/nwjs/resources.pak
+/nwjs/chromedriver.exe
+/nwjs/nwjc.exe
+/nwjs/payload.exe
+/nwjs/nacl_irt_x86_64.nexe
+/nwjs/locales
+/nwjs/pnacl
+/nwjs/natives_blob.bin
+/nwjs/snapshot_blob.bin
+/nwjs/d3dcompiler_47.dll
+/nwjs/libEGL.dll
+/nwjs/libGLESv2.dll
+/nwjs/node.dll
+/nwjs/nw.dll
+/nwjs/nw.exe
+/nwjs/nw_elf.dll
+/nwjs/credits.html
+/nwjs/ffmpeg.dll
